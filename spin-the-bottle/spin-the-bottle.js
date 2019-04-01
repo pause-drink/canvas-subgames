@@ -13,9 +13,16 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 	init();
 
 	function init() {
+		/* ----------------------------------------------------------------------------------------
+		Here we get the library of graphic assets from our spin-the-bottle-assets.js file.  In this
+		case it's just going to provide us with the bottle graphic.
+		---------------------------------------------------------------------------------------- */
 	    var comp=AdobeAn.getComposition("C10AF6F874E6874887F4BCA2F8A950E7");
 	    var lib=comp.getLibrary();
 
+		/* ----------------------------------------------------------------------------------------
+		Now we load audio assets using createjs
+		---------------------------------------------------------------------------------------- */
 	    var spinTheBottleManifest = [
 	        {src: "ding.mp3", id: "dingSound"}
 	    ];
@@ -24,9 +31,15 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 	    spinTheBottleLoader.installPlugin(createjs.Sound);   
 	    spinTheBottleLoader.loadManifest(spinTheBottleManifest, true, "canvas/spin-the-bottle/");
 
+		/* ----------------------------------------------------------------------------------------
+		We'll use these screen dimensions to scale graphics later
+		---------------------------------------------------------------------------------------- */
 		w = window.innerWidth;
 	    h = window.innerHeight;	 
-	    
+		
+		/* ----------------------------------------------------------------------------------------
+		Here we initialies the individual graphic assets using the lib variable
+		---------------------------------------------------------------------------------------- */
 		var bottle_mc = new lib.bottle();
 	    var bottleBuilder = new createjs.SpriteSheetBuilder();
 	    bottleBuilder.scale = 1.1;
@@ -35,6 +48,10 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 	    bottleBuilder.addEventListener("complete", bottleBuildComplete);
 	    bottleBuilder.buildAsync(); 
 
+		/* ----------------------------------------------------------------------------------------
+		This callback runs when the bottle asset is loaded then creates a new sprite from the data
+		and positions it on the screen.
+		---------------------------------------------------------------------------------------- */
 		function bottleBuildComplete(event) {
 		    var bottleSS = event.target.spriteSheet;
 		    bottle = new createjs.Sprite(bottleSS);
@@ -43,20 +60,28 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 			assetLoading();   
 		}
 
+		/* ----------------------------------------------------------------------------------------
+		Once the assets have loaded we set the game variables then run the game
+		---------------------------------------------------------------------------------------- */
 		function assetLoading() {
 			if(bottle) {
 				console.log('assets are loaded');
 				// initAssetListeners();
-				setGameVariables();
 				runGame();
 			}
 		}	
 
+		/* ----------------------------------------------------------------------------------------
+		Some games will require listeners to be attached to the js objects
+		---------------------------------------------------------------------------------------- */
 		// function initAssetListeners() {
 
 		// }				           
 	}
 
+	/* ----------------------------------------------------------------------------------------
+		Set the game variables for a fresh game
+	---------------------------------------------------------------------------------------- */
 	function setGameVariables() {
 		spinSpeed = 0;
 		time = 0;
@@ -67,23 +92,29 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 		spinFactor = 1000;
 	}
 
+	/* ----------------------------------------------------------------------------------------
+		Run the game 
+	---------------------------------------------------------------------------------------- */
 	function runGame() {
+		// Check if the game has already been loaded and if so, set the app's current game
 		if (pda.canvasSubgames["spin-the-bottle"]) {
 			pda.canvasSubgames.setCurrentGame(pda.canvasSubgames["spin-the-bottle"]);
 		}
 		
+		// Create a new createJS stage with the HTML5 canvas element.
 		var gameCanvas = document.getElementById("subGameCanvas");
-		gameStage = new createjs.Stage(gameCanvas); // couldn't use stageGL???
+		gameStage = new createjs.Stage(gameCanvas);
 		gameStage.canvas.width = w; 
-		gameStage.canvas.height = h;
-		// gameStage.setClearColor("#235b6d");
-		// gameStage.updateViewport(w, h);			        
+		gameStage.canvas.height = h;		        
 		gameStage.enableDOMEvents(true);
 		createjs.Touch.enable(gameStage);
 
+		// Set the variables, add the assets to the stage then add game event listeners
 		setGameVariables();
 		addAssetsToStage();
 		addStageListeners();
+		
+		// The tick event is fired many times per second and runs a function to update the game variables and graphics
 		createjs.Ticker.addEventListener("tick", canvasSubgameTick);
 	}
 
@@ -102,6 +133,10 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 	var touchX, touchY, newTime, prevTime, oldTime, newAngle, prevAngle, oldAngle, grabbed, spinning;
 	var spinSpeed, time, begin, change, duration, timeFactor, spinFactor;		
 
+	/* ----------------------------------------------------------------------------------------
+		This code provides the functionality of spinning the bottle etc using stage event handling
+		and a bit of math
+	---------------------------------------------------------------------------------------- */
 	mouseIsDown = false;
 	function addStageListeners() {
 		gameStage.on('stagemousedown', function(evt) {
@@ -240,16 +275,10 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 		return zoneX + zoneY;
 	}
 
+	/* ----------------------------------------------------------------------------------------
+		Update the variables and graphics on each game tick
+	---------------------------------------------------------------------------------------- */
 	function canvasSubgameTick(event) {
-
-		// if(grabbed) {
-		// 	if(bottle.scaleX < 1.25) {
-		// 		bottle.scaleX = bottle.scaleY += .08;	
-		// 	}
-		// } else {
-		// 	bottle.scaleX = bottle.scaleY = 1;
-		// }
-
 		if(spinning) {
 			grabbed = false;
 			bottle.rotation += (prevTime - oldTime)/1000 * spinSpeed;
@@ -272,6 +301,10 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 		return c*t*t + b;
 	};
 
+
+	/* ----------------------------------------------------------------------------------------
+		Destroy the subgame to clean up memory and make the canvas available for the next game
+	---------------------------------------------------------------------------------------- */
 	function destroyGame(event) {
 		if(event) {
 			if(!$$(event.target).is('.btn')) {
@@ -303,6 +336,9 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 		return gameStage;
 	}			
 
+	/* ----------------------------------------------------------------------------------------
+		These functions must be returned to the app can control the game
+	---------------------------------------------------------------------------------------- */
 	return {
 		init: init,
 		reset: setGameVariables,
@@ -314,4 +350,7 @@ pda.canvasSubgames["spin-the-bottle"] = (function() {
 
 })();
 
+/* ----------------------------------------------------------------------------------------
+	The first time the game is loaded we set the current game here
+---------------------------------------------------------------------------------------- */
 pda.canvasSubgames.setCurrentGame(pda.canvasSubgames["spin-the-bottle"]);
