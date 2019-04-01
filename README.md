@@ -6,6 +6,9 @@ In this repo I've added the code for the "Spin the bottle" subgame.  It's fairly
 
 ## The files
 
+### createjs.min.js
+The HTML5 canvas javascript library used by all interactive subgames
+
 ### spin-the-bottle-assets.js
 This file is output by Adobe Animate's [HTML5 Canvas publishing](https://helpx.adobe.com/animate/using/creating-publishing-html5-canvas-document.html) feature.  It simply provides the graphic assets used in the subgames.  In this case just the bottle object.
 
